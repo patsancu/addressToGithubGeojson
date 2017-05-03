@@ -1,6 +1,6 @@
 import os, sys
-import os, googlemaps, settings
-import geojson
+
+import googlemaps, geojson
 import requests
 
 import settings
@@ -10,6 +10,7 @@ api_key_env = os.getenv("GOOGLE_MAPS_API_KEY")
 if  not(api_key_settings and len(api_key_settings)) and not api_key_env :
     print "No maps_key, add an env key with GOOGLE_MAPS_API_KEY"
     print "or put one in the settings.py file"
+    sys.exit(1)
 else:
     api_key = api_key_env if api_key_env else api_key_settings
     print "Key is: " + api_key
