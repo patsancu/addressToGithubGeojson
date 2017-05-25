@@ -7,6 +7,18 @@ import googlemaps, geojson
 import requests
 
 import settings
+import argparse
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--addresses', metavar='addresses', nargs='+',
+        help='an address to parse and show')
+parser.add_argument('--input_file', dest='input_file', action='store',
+        type=file, help='pass a file from which to read')
+parser.add_argument('--output-file', dest='output_file', action='store',
+                    help='pass a file to write to')
+
+args = parser.parse_args()
+# print args
 
 debug = False
 
@@ -35,16 +47,28 @@ def fromStringToCoordinates(address_string):
     return lng, lat
 
 
-def fromCoordinatesToFeatureCollection(coordinates, address_string = None):
-    lat = coordinates[0]
-    lng = coordinates[1]
-    my_point = geojson.Point((lat, lng))
-    properties= {}
-    if address_string:
-        properties["address"] = address_string
-    my_feature = geojson.Feature(geometry=my_point, properties=properties)
-    fc = geojson.FeatureCollection([my_feature])
+def fromCoordinatesToFeatureCollection(coordinatesSet, address_string = None):
+    feature_collection = []
+    for coordinate in coordinatesSet:
+        lat = coordinate[0]
+        lng = coordinate[1]
+        properties = {}
+        my_point = geojson.Point((lat, lng))
+        my_feature = geojson.Feature(geometry = my_point, properties=properties)
+        feature_collection.append(my_feature)
+
+    fc = geojson.FeatureCollection(feature_collection)
     return fc
+
+    # lat = coordinates[0]
+    # lng = coordinates[1]
+    # my_point = geojson.Point((lat, lng))
+    # properties= {}
+    # if address_string:
+        # properties["address"] = address_string
+    # my_feature = geojson.Feature(geometry=my_point, properties=properties)
+    # fc = geojson.FeatureCollection([my_feature])
+    # return fc
 
 def fromGeoJSONtoString(inputGeoJSON):
     dump = geojson.dumps(inputGeoJSON, sort_keys=True)
@@ -134,15 +158,27 @@ else:
 write_to_file_flag = False
 gmaps = googlemaps.Client(key=google_maps_key)
 
+if args.input_file:
+    addresses = args.input_file.readlines()
+if args.addresses:
+    addresses = args.addresses
 
+for address in addresses:
+    coordinates = fromStringToCoordinates(address)
+    print coordinates
 
-coordinates = fromStringToCoordinates(address_string)
-print coordinates
-
-fc = fromCoordinatesToFeatureCollection(coordinates)
+coordinate_set = map(fromStringToCoordinates, addresses)
+print coordinate_set
+fc = fromCoordinatesToFeatureCollection(coordinate_set)
 print fc
 
-gist = createGistDictFromGeojson("prueba.json", "patata", fc)
+# coordinates = fromStringToCoordinates(address_string)
+
+# fc = fromCoordinatesToFeatureCollection(coordinates)
+# print fc
+
+gist = createGistDictFromGeojson("output.json", "patata", fc)
+# gist = createGistDictFromGeojson("prueba.json", "patata", fc)
 print gist
 
 response = publishToGists(gist)
