@@ -38,7 +38,7 @@ def fromStringToCoordinates(address_string):
         return False
 
     if len(addresses) > 1:
-        print "address {} is ambigous".format(address_string)
+        print "address {} is ambiguous".format(address_string)
     maps_dict = addresses[0]
     location = maps_dict['geometry']['location']
     lat, lng = location['lat'], location['lng']
