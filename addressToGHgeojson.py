@@ -54,7 +54,6 @@ def from_string_to_coordinates_and_poi(address_string):
     return lng, lat, poi_type
 
 def get_icon_name_for_poi_type(poi_type):
-    print "Type of poi_type param is: {}".format(type(poi_type))
     if poi_type == "bar":
         return "bar"
     print "Poi_type is not a bar, it's a: {}".format(poi_type)
