@@ -32,6 +32,13 @@ def write_to_file(filename, contents):
     f.close()
 
 def fromStringToCoordinates(address_string):
+    address_tokens = address_string.split(';')
+    poi_type = None
+    if len(address_tokens) > 1:
+        poi_type = address_tokens[1].strip()
+        if debug:
+            print "Address is: {}".format(address_tokens[0])
+            print "POI type is: {}".format(address_tokens[1])
     addresses = gmaps.geocode(address_string)
     if len(addresses) == 0:
         print "address {} has not returned any results".format(address_string)
@@ -44,31 +51,32 @@ def fromStringToCoordinates(address_string):
     lat, lng = location['lat'], location['lng']
     if debug:
         print "address {} has coordinates: {},{}".format(address_string, lat, lng)
-    return lng, lat
+    return lng, lat, poi_type
 
+def get_icon_name_for_poi_type(poi_type):
+    print "Type of poi_type param is: {}".format(type(poi_type))
+    if poi_type == "bar":
+        return "bar"
+    print "Poi_type is not a bar, it's a: {}".format(poi_type)
+    return 'triangle'
 
 def fromCoordinatesToFeatureCollection(coordinatesSet, address_string = None):
     feature_collection = []
     for coordinate in coordinatesSet:
         lat = coordinate[0]
         lng = coordinate[1]
+        poi_type = coordinate[2]
+        if debug:
+            print "poi_type is: {}".format(poi_type)
         properties = {}
+        if poi_type:
+            properties['marker-symbol'] = get_icon_name_for_poi_type(poi_type)
         my_point = geojson.Point((lat, lng))
         my_feature = geojson.Feature(geometry = my_point, properties=properties)
         feature_collection.append(my_feature)
 
     fc = geojson.FeatureCollection(feature_collection)
     return fc
-
-    # lat = coordinates[0]
-    # lng = coordinates[1]
-    # my_point = geojson.Point((lat, lng))
-    # properties= {}
-    # if address_string:
-        # properties["address"] = address_string
-    # my_feature = geojson.Feature(geometry=my_point, properties=properties)
-    # fc = geojson.FeatureCollection([my_feature])
-    # return fc
 
 def fromGeoJSONtoString(inputGeoJSON):
     dump = geojson.dumps(inputGeoJSON, sort_keys=True)
@@ -100,7 +108,6 @@ def publishToGists(gist_object):
     if not response.ok:
         print "something strange happened"
     obj = json.loads(response.text)
-    print obj['html_url']
     if debug:
         print "{}".format(response.text)
     return (response.ok, obj['html_url'])
@@ -165,21 +172,22 @@ if args.addresses:
 
 for address in addresses:
     coordinates = fromStringToCoordinates(address)
-    print coordinates
+    if debug:
+        print coordinates
 
 coordinate_set = map(fromStringToCoordinates, addresses)
-print coordinate_set
+if debug:
+    print coordinate_set
 fc = fromCoordinatesToFeatureCollection(coordinate_set)
-print fc
+if debug:
+    print fc
 
-# coordinates = fromStringToCoordinates(address_string)
-
-# fc = fromCoordinatesToFeatureCollection(coordinates)
-# print fc
 
 gist = createGistDictFromGeojson("output.json", "patata", fc)
-# gist = createGistDictFromGeojson("prueba.json", "patata", fc)
-print gist
+if debug:
+    print gist
 
-response = publishToGists(gist)
-print response
+response, gist_url = publishToGists(gist)
+print gist_url
+if debug:
+    print response
