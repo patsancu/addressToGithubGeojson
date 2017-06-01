@@ -31,7 +31,7 @@ def write_to_file(filename, contents):
     f.write(contents)
     f.close()
 
-def fromStringToCoordinates(address_string):
+def from_string_to_coordinates_and_poi(address_string):
     address_tokens = address_string.split(';')
     poi_type = None
     if len(address_tokens) > 1:
@@ -170,12 +170,7 @@ if args.input_file:
 if args.addresses:
     addresses = args.addresses
 
-for address in addresses:
-    coordinates = fromStringToCoordinates(address)
-    if debug:
-        print coordinates
-
-coordinate_set = map(fromStringToCoordinates, addresses)
+coordinate_set = map(from_string_to_coordinates_and_poi, addresses)
 if debug:
     print coordinate_set
 fc = fromCoordinatesToFeatureCollection(coordinate_set)
