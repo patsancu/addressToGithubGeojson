@@ -26,7 +26,7 @@ debug = False
 
 # Parse address
 if len(sys.argv) == 1:
-    print "usage: {} \"address\"".format(sys.argv[0])
+    print "usage: {} --\"address\"".format(sys.argv[0])
     sys.exit(2)
 if len(sys.argv) > 1:
     address_string = sys.argv[1]
